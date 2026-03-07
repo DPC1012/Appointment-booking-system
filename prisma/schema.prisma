@@ -13,3 +13,82 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role          @default(USER)
+  createdAt    DateTime      @default(now())
+  services     Service[]
+  appointments Appointment[]
+
+  @@index([role])
+}
+
+enum Role {
+  USER
+  SERVICE_PROVIDER
+}
+
+model Service {
+  id              String       @id @default(uuid())
+  name            String
+  type            ServiceTypes
+  providerId      String
+  durationMinutes Int          @default(30)
+  createdAt       DateTime     @default(now())
+
+  provider     User           @relation(fields: [providerId], references: [id])
+  availability Availability[]
+  appointments Appointment[]
+
+  @@index([providerId])
+  @@index([type])
+}
+
+enum ServiceTypes {
+  MEDICAL
+  HOUSE_HELP
+  BEAUTY
+  FITNESS
+  EDUCATION
+  OTHER
+}
+
+model Availability {
+  id        String @id @default(uuid())
+  serviceId String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@index([serviceId])
+  @@index([dayOfWeek])
+}
+
+model Appointment {
+  id        String   @id @default(uuid())
+  userId    String
+  serviceId String
+  date      String
+  startTime String
+  endTime   String
+  slotId    String   @unique
+  status    Status   @default(BOOKED)
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@unique([serviceId, date, startTime])
+  @@index([userId])
+  @@index([serviceId])
+}
+
+enum Status {
+  BOOKED
+  CANCELLED
+}
