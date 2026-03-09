@@ -90,7 +90,7 @@ authRouter.post("/login", async (req, res) => {
     }
     try
     {
-        const token = jwt.sign({id: findUser.id, role: findUser.role}, process.env.JWT_SECRET as string);
+        const token = jwt.sign({userId: findUser.id, role: findUser.role}, process.env.JWT_SECRET as string);
         return res.json({
             success: false,
             data:{ 
